@@ -152,15 +152,24 @@ func _build_fill_mesh(points: PackedVector2Array, s_mat: SS2D_Material_Shape) ->
 	st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 
+	var added_offset := -fill_texture_offset
+	if fill_texture_absolute_position:
+		added_offset += global_position
+
+	var global_rotation_reversal := global_rotation # (a1) This remove the rotation of the texture ...
+	var rotation_offset := -deg_to_rad(fill_texture_angle_offset)
+	if not fill_texture_absolute_rotation:
+		rotation_offset -= global_rotation # (a2) ... and here we rotate it back to the initial rotation (if needed). This prevents weird shifts when moving the mesh around.
+
 	for i in range(0, fill_tris.size() - 1, 3):
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(points[fill_tris[i]], tex_size))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
 		st.add_vertex(Vector3(points[fill_tris[i]].x, points[fill_tris[i]].y, 0))
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(points[fill_tris[i + 1]], tex_size))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i + 1]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
 		st.add_vertex(Vector3(points[fill_tris[i + 1]].x, points[fill_tris[i + 1]].y, 0))
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(points[fill_tris[i + 2]], tex_size))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i + 2]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
 		st.add_vertex(Vector3(points[fill_tris[i + 2]].x, points[fill_tris[i + 2]].y, 0))
 	st.index()
 	st.generate_normals()
