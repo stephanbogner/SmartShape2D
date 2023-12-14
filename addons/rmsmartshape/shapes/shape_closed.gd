@@ -152,24 +152,16 @@ func _build_fill_mesh(points: PackedVector2Array, s_mat: SS2D_Material_Shape) ->
 	st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	var added_offset := -fill_texture_offset
-	if fill_texture_absolute_position:
-		added_offset += global_position
-
-	var global_rotation_reversal := global_rotation # (a1) This remove the rotation of the texture ...
-	var rotation_offset := -deg_to_rad(fill_texture_angle_offset)
-	if not fill_texture_absolute_rotation:
-		rotation_offset -= global_rotation # (a2) ... and here we rotate it back to the initial rotation (if needed). This prevents weird shifts when moving the mesh around.
-
 	for i in range(0, fill_tris.size() - 1, 3):
+		#var points_center := (points[fill_tris[i]] + points[fill_tris[i + 1]] + points[fill_tris[i + 2]]) / 3
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(_transform_point_for_uv(points[fill_tris[i]]), tex_size))
 		st.add_vertex(Vector3(points[fill_tris[i]].x, points[fill_tris[i]].y, 0))
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i + 1]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(_transform_point_for_uv(points[fill_tris[i + 1]]), tex_size))
 		st.add_vertex(Vector3(points[fill_tris[i + 1]].x, points[fill_tris[i + 1]].y, 0))
 		st.set_color(Color.WHITE)
-		_add_uv_to_surface_tool(st, _convert_local_space_to_uv((points[fill_tris[i + 2]].rotated(global_rotation_reversal) + added_offset), tex_size).rotated(rotation_offset))
+		_add_uv_to_surface_tool(st, _convert_local_space_to_uv(_transform_point_for_uv(points[fill_tris[i + 2]]), tex_size))
 		st.add_vertex(Vector3(points[fill_tris[i + 2]].x, points[fill_tris[i + 2]].y, 0))
 	st.index()
 	st.generate_normals()
@@ -186,6 +178,25 @@ func _build_fill_mesh(points: PackedVector2Array, s_mat: SS2D_Material_Shape) ->
 
 	return meshes
 
+func _transform_point_for_uv(point:Vector2) -> Vector2:
+	var new_point := point
+
+	# If absolute position ... cancel out the node's position (adjusted due to rotation)
+	if fill_texture_absolute_position:
+		new_point += global_position.rotated(-global_rotation)
+
+	# Scale
+	new_point /= fill_texture_scale
+
+	# If absolute rotation ... cancel out the node's rotation
+	if fill_texture_absolute_rotation: 
+		new_point = new_point.rotated(global_rotation)
+	
+	# Rotate and shift the desired extra amount
+	new_point = new_point.rotated(-deg_to_rad(fill_texture_angle_offset))
+	new_point -= fill_texture_offset
+
+	return new_point
 
 ## Is this shape not yet closed but should be?
 func can_close() -> bool:
