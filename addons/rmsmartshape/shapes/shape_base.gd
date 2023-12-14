@@ -106,22 +106,6 @@ var collision_offset: float = 0.0 : set = set_collision_offset
 ## NodePath to CollisionPolygon2D node for which polygon data will be generated.
 @export var collision_polygon_node_path: NodePath = ""
 
-@export_group("Fill behaviour")
-## Scale the fill texture
-@export_range(0.1, 4, 0.01, "or_greater") var fill_texture_scale: float = 1.0 : set = set_fill_texture_scale
-
-## Whether the fill texture should start at the global 0/0 instead of the node's 0/0
-@export var fill_texture_absolute_position: bool = false : set = set_fill_texture_absolute_position
-
-## Whether the fill texture should ignore the node's rotation
-@export var fill_texture_absolute_rotation: bool = false : set = set_fill_texture_absolute_rotation
-
-## How many pixels the fill texture should be shifted in x and y direction
-@export var fill_texture_offset: Vector2 = Vector2.ZERO : set = set_fill_texture_offset
-
-## Added rotation of the texture in degrees
-@export_range(-180, 180, 0.1) var fill_texture_angle_offset: float = 0.0 : set = set_fill_texture_angle_offset
-
 #####################
 #-SETTERS / GETTERS-#
 #####################
@@ -191,26 +175,6 @@ func _update_curve_no_control() -> void:
 	_curve_no_control_points.clear_points()
 	for i in range(0, _curve.get_point_count(), 1):
 		_curve_no_control_points.add_point(_curve.get_point_position(i))
-
-func set_fill_texture_offset(value: Vector2) -> void:
-	fill_texture_offset = value
-	set_as_dirty()
-
-func set_fill_texture_scale(value:float) -> void:
-	fill_texture_scale = value
-	set_as_dirty()
-
-func set_fill_texture_absolute_rotation(value: bool) -> void:
-	fill_texture_absolute_rotation = value
-	set_as_dirty()
-
-func set_fill_texture_angle_offset(value: float) -> void:
-	fill_texture_angle_offset = value
-	set_as_dirty()
-
-func set_fill_texture_absolute_position(value: bool) -> void:
-	fill_texture_absolute_position = value
-	set_as_dirty()
 
 # FIXME: Only used by unit test.
 func set_curve(value: Curve2D) -> void:
